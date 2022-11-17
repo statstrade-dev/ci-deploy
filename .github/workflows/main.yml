@@ -10,7 +10,7 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v3
         with:
-          repository: statstrade-deploy/deploy.local-dual
+          repository: statstrade-deploy/deploy.compose-dual
           token: ${{ secrets.GH_TOKEN }}
 
       - name: Write SSH keys
