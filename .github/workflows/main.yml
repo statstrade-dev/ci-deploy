@@ -1,0 +1,25 @@
+name: Deploy Production
+
+on: [push, repository_dispatch, workflow_dispatch]
+
+jobs:
+
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+        with:
+          repository: statstrade-deploy/deploy.local-dual
+          token: ${{ secrets.GH_TOKEN }}
+
+      - name: Write SSH keys
+        shell: bash
+        run: |
+          install -m 600 -D /dev/null ~/.ssh/id_rsa
+          echo "${{ secrets.STATS_DEPLOYMENT_KEY }}" > ~/.ssh/id_rsa
+          ssh-keyscan -H ${{ secrets.STATS_DEPLOYMENT_HOST }} > ~/.ssh/known_hosts
+      - name: SSH Deploy
+        run: |
+          scp docker-compose.base.yml root@${{ secrets.STATS_DEPLOYMENT_HOST }}:/opt/sites/prod/docker-compose.yml
+          ssh root@${{ secrets.STATS_DEPLOYMENT_HOST }} "cd /opt/sites/prod && docker-compose pull && docker-compose up -d"
